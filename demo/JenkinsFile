@@ -1,60 +1,39 @@
 pipeline {
+
     agent any
+
     stages {
-        stage('global stage') {
-            agent {
-                docker {
-                    image 'maven:3.8.3-openjdk-17'
-                    args '-u root --entrypoint='
-                }
+
+        stage('Start Selenium') {
+            steps {
+                sh 'docker compose up -d'
+                sh 'docker compose ps'
             }
-            stages {
-                    
-                stage('clean allure results') {
-                    steps {
-                        sh '''
-                            echo "Nettoyage des anciens résultats..."
-                            rm -rf target/allure-results allure-results
-                            mkdir -p target/allure-results
-                        '''
-                    }
-                }
+        }
 
-                stage('compile') {
-                    steps {
-                        sh 'mvn clean test-compile'
-                    }
-                }
-        
-                stage('run selenium grid tests') {
-                    steps {   
-                        script {
-                            def seleniumGridUrl = "http://selenium-hub:4444/wd/hub"
+        stage('Tests') {
 
-                            sh "mvn test -Dselenium.grid.url=${seleniumGridUrl}"
+            agent {
+    docker {
+        image 'maven:3.8.3-openjdk-17'
+        args "--entrypoint='' --shm-size=2g --network=pipeline_projet_selenium_default"
+        reuseNode true
+    }
+}
 
-                            stash name: 'allure-results', includes: '**/allure-results/*'
-                        } 
-                    }
-                }
+            steps {
+                sh 'mvn clean test'
             }
         }
     }
+
     post {
         always {
-            script {
-                try {
-                    unstash 'allure-results'
-                } catch (Exception e) {
-                    echo "Erreur ou aucun stash trouvé: ${e.message}"
-                }
-                
-                archiveArtifacts artifacts: '**/allure-results/*', allowEmptyArchive: true
-                
-                allure includeProperties: false,
-                       jdk: '',
-                       results: [[path: 'target/allure-results'], [path: 'allure-results']]
-            }
+            allure([
+                results: [[path: 'target/allure-results']]
+            ])
+
+            sh 'docker compose down || true'
         }
-    } 
+    }
 }
