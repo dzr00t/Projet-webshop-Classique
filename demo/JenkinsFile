@@ -34,6 +34,7 @@ pipeline {
                         script {
                             // Execution des tests Selenium avec Maven
                             // Utilisation de -Dheadless=true si votre code Selenium le supporte
+                            sh 'cd demo'
                             sh 'mvn test'
 
                             // Sauvegarde des resultats Allure (s'assure de chercher au bon endroit)
