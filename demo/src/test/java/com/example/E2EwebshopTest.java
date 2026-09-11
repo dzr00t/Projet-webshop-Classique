@@ -1,6 +1,5 @@
 package com.example;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
@@ -9,7 +8,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -82,8 +80,8 @@ public class E2EwebshopTest {
     String CardNumber = faker.finance().creditCard();
 
     @Test
-    @Tag("Register")
-    public void Register() {
+    @Tag("E2E")
+    public void E2Ewebshop() {
 
         // on clique sur register
         Hpf.ClickRegister();
