@@ -4,7 +4,6 @@ pipeline {
         stage('global stage') {
             agent {
                 docker {
-                    // Utilisation d'une image avec Maven, JDK et Chrome pré-installés
                     image 'markhobson/maven-chrome:jdk-17'
                     args '-u root --entrypoint='
                 }
@@ -25,6 +24,7 @@ pipeline {
                     steps {
                         // Verification de la presence de Chrome dans le conteneur
                         sh 'google-chrome --version'
+                        sh 'cd demo'
                         sh 'mvn clean test-compile'
                     }
                 }
@@ -33,8 +33,7 @@ pipeline {
                     steps {   
                         script {
                             // Execution des tests Selenium avec Maven
-                            // Utilisation de -Dheadless=true si votre code Selenium le supporte
-                            sh 'cd demo'
+                            
                             sh 'mvn test'
 
                             // Sauvegarde des resultats Allure (s'assure de chercher au bon endroit)
