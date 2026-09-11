@@ -22,7 +22,6 @@ pipeline {
 
                 stage('install deps & compile') {
                     steps {
-                        // Verification de la presence de Chrome dans le conteneur
                         sh 'google-chrome --version'
                         sh 'cd demo'
                         sh 'mvn clean test-compile'
@@ -32,11 +31,9 @@ pipeline {
                 stage('run selenium tests') {
                     steps {   
                         script {
-                            // Execution des tests Selenium avec Maven
                             
                             sh 'mvn test'
 
-                            // Sauvegarde des resultats Allure (s'assure de chercher au bon endroit)
                             stash name: 'allure-results', includes: '**/allure-results/*'
                         } 
                     }
@@ -47,7 +44,6 @@ pipeline {
     post {
         always {
             script {
-                // Recuperation des fichiers de test et archivage
                 try {
                     unstash 'allure-results'
                 } catch (Exception e) {
@@ -56,7 +52,6 @@ pipeline {
                 
                 archiveArtifacts artifacts: '**/allure-results/*', allowEmptyArchive: true
                 
-                // Generation du rapport Allure par le plugin Jenkins
                 allure includeProperties: false,
                        jdk: '',
                        results: [[path: 'target/allure-results'], [path: 'allure-results']]
