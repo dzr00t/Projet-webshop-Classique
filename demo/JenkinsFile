@@ -4,7 +4,7 @@ pipeline {
         stage('global stage') {
             agent {
                 docker {
-                    image 'markhobson/maven-chrome:jdk-17'
+                    image 'maven:3.8.3-openjdk-17'
                     args '-u root --entrypoint='
                 }
             }
@@ -13,26 +13,25 @@ pipeline {
                 stage('clean allure results') {
                     steps {
                         sh '''
-                            echo "Nettoyage du dossier allure-results..."
+                            echo "Nettoyage des anciens résultats..."
                             rm -rf target/allure-results allure-results
                             mkdir -p target/allure-results
                         '''
                     }
                 }
 
-                stage('install deps & compile') {
+                stage('compile') {
                     steps {
-                        sh 'google-chrome --version'
-                        sh 'cd demo'
                         sh 'mvn clean test-compile'
                     }
                 }
         
-                stage('run selenium tests') {
+                stage('run selenium grid tests') {
                     steps {   
                         script {
-                            
-                            sh 'mvn test'
+                            def seleniumGridUrl = "http://selenium-hub:4444/wd/hub"
+
+                            sh "mvn test -Dselenium.grid.url=${seleniumGridUrl}"
 
                             stash name: 'allure-results', includes: '**/allure-results/*'
                         } 
@@ -47,7 +46,7 @@ pipeline {
                 try {
                     unstash 'allure-results'
                 } catch (Exception e) {
-                    echo "Aucun stash Allure trouvé ou erreur lors du unstash: ${e.message}"
+                    echo "Erreur ou aucun stash trouvé: ${e.message}"
                 }
                 
                 archiveArtifacts artifacts: '**/allure-results/*', allowEmptyArchive: true
